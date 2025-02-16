@@ -1,10 +1,10 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express, Handler, IRouter, Request, Response } from "express";
 
-import { PluginBase, PluginResult, UserInputContext } from "@maiar-ai/core";
-import { ExpressPluginConfig, ExpressResponseSchema } from "./types";
+import { PluginBase, PluginResult } from "@maiar-ai/core";
 import { generateResponseTemplate } from "./templates";
+import { ExpressPluginConfig, ExpressResponseSchema } from "./types";
 
-interface ExpressPlatformContext {
+export interface ExpressPlatformContext {
   platform: string;
   responseHandler?: (response: unknown) => void;
   metadata?: {
@@ -17,7 +17,8 @@ export class PluginExpress extends PluginBase {
   private app: Express | null = null;
 
   constructor(
-    private config: ExpressPluginConfig = { port: 3000, host: "localhost" }
+    private config: ExpressPluginConfig = { port: 3000, host: "localhost" },
+    private routes: Record<string, Handler | IRouter> = {}
   ) {
     super({
       id: "plugin-express",
@@ -78,60 +79,41 @@ export class PluginExpress extends PluginBase {
           console.warn("[Express Plugin] Express server already running");
           return;
         }
+        const _app = express();
+        _app.use(express.json());
 
-        this.app = express();
-        this.app.use(express.json());
+        // mount the plugin instance on the request object
+        _app.use((req: Request, res, next) => {
+          req.plugin = this;
+          next();
+        });
+
         console.log("[Express Plugin] Express middleware configured");
 
+        let customHealthCheck = false;
+        Object.entries(this.routes).forEach(([route, handler]) => {
+          if (route === "/health") {
+            customHealthCheck = true;
+          }
+          _app.use(route, handler);
+        });
+
         // Basic health check endpoint
-        this.app.get("/health", (req, res) => {
-          console.log("[Express Plugin] Health check requested");
-          res.json({ status: "ok" });
-        });
-
-        // Generic message endpoint that creates a context
-        this.app.post("/message", async (req: Request, res: Response) => {
-          const { message, user } = req.body;
-          console.log(
-            `[Express Plugin] Received message from user ${user || "anonymous"}:`,
-            message
-          );
-
-          // Create new context chain with initial user input
-          const initialContext: UserInputContext = {
-            id: `${this.id}-${Date.now()}`,
-            pluginId: this.id,
-            type: "user_input",
-            action: "receive_message",
-            content: message,
-            timestamp: Date.now(),
-            rawMessage: message,
-            user: user || "anonymous"
-          };
-
-          // Create event with initial context and response handler
-          const platformContext: ExpressPlatformContext = {
-            platform: this.id,
-            responseHandler: (result: unknown) => res.json(result),
-            metadata: {
-              req,
-              res
-            }
-          };
-
-          await this.runtime.createEvent(initialContext, platformContext);
-        });
+        if (!customHealthCheck) {
+          _app.get("/health", (req, res) => {
+            console.log("[Express Plugin] Health check requested");
+            res.json({ status: "ok" });
+          });
+        }
 
         // Start the server
-        this.app.listen(
-          this.config.port,
-          this.config.host || "localhost",
-          () => {
-            console.log(
-              `[Express Plugin] Server is running on ${this.config.host || "localhost"}:${this.config.port}`
-            );
-          }
-        );
+        _app.listen(this.config.port, this.config.host || "localhost", () => {
+          console.log(
+            `[Express Plugin] Server is running on ${this.config.host || "localhost"}:${this.config.port}`
+          );
+        });
+
+        this.app = _app;
       }
     });
   }

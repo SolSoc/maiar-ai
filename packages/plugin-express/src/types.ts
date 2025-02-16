@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 /**
  * Configuration options for the Express plugin.
  */
