@@ -27,55 +27,6 @@ jobs:
         with:
           filters: .github/filters.yaml
 
-  generate-docs:
-    name: 📚 Generate API Docs
-    needs: package-release-prep
-    runs-on: ubuntu-latest
-    if: ${{ needs.package-release-prep.outputs.source-code == 'true' }}
-    steps:
-      - name: 🛒 Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: 🌎 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: package.json
-
-      - name: 📦 Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          package_json_file: package.json
-          run_install: false
-
-      - name: 📦 Install Dependencies
-        run: pnpm install
-
-      - name: 📚 Generate Docs
-        run: pnpm build:website
-
-      - name: 🔧 Configure Git
-        run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-
-      - name: 🔎📦 Commit Changes on API Doc Changes
-        continue-on-error: true
-        run: |
-          if git diff --quiet website/api; then
-            echo "No API documentation changes detected. Failing the job."
-            exit 1
-          fi
-
-          echo "API documentation has changed from relevant code changes in packages/**/src/*.ts files"
-          echo "Committing API documentation changes..."
-
-          git add website/api
-          git commit -m "docs(website): update API documentation between commits ${{ github.event.before }}..${{ github.sha }}"
-          git push
-
   # This commit analyzer step is needed because "lerna version --conventional-commits" will not follow conventional commits bump rules and as long as it sees a package source code change it will at least bump a patch version release - https://github.com/lerna/lerna/issues/2379
   commit-analyzer:
     name: 📝 Commit Analyzer
@@ -125,7 +76,6 @@ jobs:
   package-release:
     name: 🚀 Package Release
     needs:
-      - generate-docs
       - package-release-prep
       - commit-analyzer
     runs-on: ubuntu-latest
@@ -160,7 +110,7 @@ jobs:
         run: pnpm install
 
       - name: 🧱 Build Packages
-        run: pnpm build:packages
+        run: pnpm build
 
       - name: 🔖 (Tag + Release) Packages to Github Repo
         env:
@@ -178,4 +128,67 @@ jobs:
 
           echo "Publishing packages to NPM..."
           echo "NPM Package version $LATEST_TAG"
-          pnpm lerna publish from-git --yes --no-private --ignore-scripts --dist-tag latest --loglevel verbose
+          pnpm lerna publish from-git --yes --no-private --dist-tag latest --loglevel verbose
+
+  generate-docs:
+    name: 📚 Generate API Docs
+    needs:
+      - package-release-prep
+      - commit-analyzer
+      - package-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "write"
+      packages: "write"
+      actions: "read"
+    if: ${{ needs.package-release-prep.outputs.source-code == 'true' && needs.commit-analyzer.outputs.releasable == 'true' }}
+    steps:
+      - name: 🔑 Create GitHub App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: 🛒 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: 🌎 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+
+      - name: 📦 Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: package.json
+          run_install: false
+
+      - name: 📦 Install Dependencies
+        run: pnpm install
+
+      - name: 📚 Generate Docs
+        run: pnpm build:website
+
+      - name: 🔧 Configure Git
+        run: |
+          git config --global user.name "maiar-intern"
+          git config --global user.email "maiar-intern@users.noreply.github.com"
+
+      - name: 🔎📦 Commit Changes on API Doc Changes
+        continue-on-error: true
+        run: |
+          if git diff --quiet website/api; then
+            echo "No API documentation changes detected. Failing the job."
+            exit 1
+          fi
+
+          echo "API documentation has changed from relevant code changes in packages/**/src/*.ts files"
+          echo "Committing API documentation changes..."
+
+          git add website/api
+          git commit -m "docs(website): update API documentation between commits ${{ github.event.before }}..${{ github.sha }}"
+          git push

@@ -4,6 +4,7 @@ import "dotenv/config";
 process.removeAllListeners("warning");
 
 import { config } from "dotenv";
+import fs from "fs";
 import path from "path";
 
 // Load environment variables from root .env
@@ -15,7 +16,6 @@ import { createRuntime } from "@maiar-ai/core";
 
 // Import all plugins
 import { PluginExpress } from "@maiar-ai/plugin-express";
-import { PluginX } from "@maiar-ai/plugin-x";
 import { PluginTextGeneration } from "@maiar-ai/plugin-text";
 import { PluginTime } from "@maiar-ai/plugin-time";
 
@@ -33,13 +33,17 @@ const runtime = createRuntime({
   }),
   plugins: [
     new PluginExpress({ port: 3000 }),
-    new PluginX({
-      username: process.env.X_USERNAME as string,
-      password: process.env.X_PASSWORD as string,
-      email: process.env.X_EMAIL as string
-    }),
     new PluginTextGeneration(),
-    new PluginTime()
+    new PluginTime(),
+    new PluginCharacter({
+      character: fs.readFileSync(
+        path.join(process.cwd(), "character.xml"),
+        "utf-8"
+      )
+    }),
+    new PluginSearch({
+      apiKey: process.env.PERPLEXITY_API_KEY as string
+    })
   ]
 });
 

@@ -1,4 +1,4 @@
-# @maiar-ai/core v0.1.2
+# @maiar-ai/core v0.4.0
 
 ## Classes
 

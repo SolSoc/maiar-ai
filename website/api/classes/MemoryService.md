@@ -28,7 +28,7 @@ Defined in: [packages/core/src/memory/service.ts:19](https://github.com/UraniumC
 
 ### storeUserInteraction()
 
-> **storeUserInteraction**(`user`, `platform`, `message`, `timestamp`): `Promise`\<`void`\>
+> **storeUserInteraction**(`user`, `platform`, `message`, `timestamp`, `messageId`?): `Promise`\<`void`\>
 
 Defined in: [packages/core/src/memory/service.ts:40](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L40)
 
@@ -52,6 +52,10 @@ Store a user interaction in memory
 
 `number`
 
+##### messageId?
+
+`string`
+
 #### Returns
 
 `Promise`\<`void`\>
@@ -62,7 +66,7 @@ Store a user interaction in memory
 
 > **storeAssistantInteraction**(`user`, `platform`, `response`, `contextChain`): `Promise`\<`void`\>
 
-Defined in: [packages/core/src/memory/service.ts:97](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L97)
+Defined in: [packages/core/src/memory/service.ts:100](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L100)
 
 Store an assistant interaction and its context in memory
 
@@ -94,7 +98,7 @@ Store an assistant interaction and its context in memory
 
 > **storeMessage**(`message`, `conversationId`): `Promise`\<`void`\>
 
-Defined in: [packages/core/src/memory/service.ts:185](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L185)
+Defined in: [packages/core/src/memory/service.ts:188](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L188)
 
 #### Parameters
 
@@ -116,7 +120,7 @@ Defined in: [packages/core/src/memory/service.ts:185](https://github.com/Uranium
 
 > **storeContext**(`context`, `conversationId`): `Promise`\<`void`\>
 
-Defined in: [packages/core/src/memory/service.ts:194](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L194)
+Defined in: [packages/core/src/memory/service.ts:197](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L197)
 
 #### Parameters
 
@@ -138,7 +142,7 @@ Defined in: [packages/core/src/memory/service.ts:194](https://github.com/Uranium
 
 > **getMessages**(`options`): `Promise`\<[`Message`](../interfaces/Message.md)[]\>
 
-Defined in: [packages/core/src/memory/service.ts:203](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L203)
+Defined in: [packages/core/src/memory/service.ts:206](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L206)
 
 #### Parameters
 
@@ -156,7 +160,7 @@ Defined in: [packages/core/src/memory/service.ts:203](https://github.com/Uranium
 
 > **getContexts**(`conversationId`): `Promise`\<[`Context`](../interfaces/Context.md)[]\>
 
-Defined in: [packages/core/src/memory/service.ts:211](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L211)
+Defined in: [packages/core/src/memory/service.ts:214](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L214)
 
 #### Parameters
 
@@ -174,7 +178,7 @@ Defined in: [packages/core/src/memory/service.ts:211](https://github.com/Uranium
 
 > **getConversation**(`conversationId`): `Promise`\<[`Conversation`](../interfaces/Conversation.md)\>
 
-Defined in: [packages/core/src/memory/service.ts:219](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L219)
+Defined in: [packages/core/src/memory/service.ts:222](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L222)
 
 #### Parameters
 
@@ -192,7 +196,7 @@ Defined in: [packages/core/src/memory/service.ts:219](https://github.com/Uranium
 
 > **createConversation**(`options`?): `Promise`\<`string`\>
 
-Defined in: [packages/core/src/memory/service.ts:227](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L227)
+Defined in: [packages/core/src/memory/service.ts:230](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L230)
 
 #### Parameters
 
@@ -218,7 +222,7 @@ eslint-disable-next-line @typescript-eslint/no-explicit-any
 
 > **deleteConversation**(`conversationId`): `Promise`\<`void`\>
 
-Defined in: [packages/core/src/memory/service.ts:239](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L239)
+Defined in: [packages/core/src/memory/service.ts:242](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L242)
 
 #### Parameters
 
@@ -236,7 +240,7 @@ Defined in: [packages/core/src/memory/service.ts:239](https://github.com/Uranium
 
 > **getOrCreateConversation**(`user`, `platform`): `Promise`\<`string`\>
 
-Defined in: [packages/core/src/memory/service.ts:246](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L246)
+Defined in: [packages/core/src/memory/service.ts:249](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L249)
 
 Get or create a conversation for a user on a platform
 
@@ -260,7 +264,7 @@ Get or create a conversation for a user on a platform
 
 > **getRecentConversationHistory**(`user`, `platform`, `limit`): `Promise`\<`object`[]\>
 
-Defined in: [packages/core/src/memory/service.ts:264](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L264)
+Defined in: [packages/core/src/memory/service.ts:267](https://github.com/UraniumCorporation/maiar-ai/blob/main/packages/core/src/memory/service.ts#L267)
 
 Get recent conversation history for a user/platform
 
@@ -276,7 +280,7 @@ Get recent conversation history for a user/platform
 
 ##### limit
 
-`number` = `5`
+`number` = `100`
 
 #### Returns
 

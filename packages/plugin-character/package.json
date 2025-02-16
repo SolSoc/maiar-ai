@@ -1,5 +1,5 @@
 {
-  "name": "@maiar-ai/model-openai",
+  "name": "@maiar-ai/plugin-character",
   "version": "0.4.0",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -25,7 +25,7 @@
     "agent",
     "framework",
     "plugin",
-    "openai"
+    "character"
   ],
   "author": "UraniumCorporation <contact@maiar.dev> (https://maiar.dev)",
   "license": "MIT",
@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "@maiar-ai/core": "workspace:*",
-    "openai": "4.82.0"
+    "zod": "3.24.1"
   },
   "devDependencies": {
     "@types/node": "22.13.1",

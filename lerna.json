@@ -1,20 +1,7 @@
 {
   "$schema": "node_modules/lerna/schemas/lerna-schema.json",
-  "version": "0.1.2",
-  "packages": [
-    "packages/core",
-    "packages/memory-filesystem",
-    "packages/memory-sqlite",
-    "packages/model-ollama",
-    "packages/model-openai",
-    "packages/plugin-express",
-    "packages/plugin-image",
-    "packages/plugin-telegram",
-    "packages/plugin-terminal",
-    "packages/plugin-text",
-    "packages/plugin-time",
-    "packages/plugin-websocket"
-  ],
+  "version": "0.4.0",
+  "packages": ["packages/*"],
   "npmClient": "pnpm",
   "command": {
     "publish": {
