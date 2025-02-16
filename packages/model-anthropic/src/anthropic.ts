@@ -9,7 +9,7 @@ import { generateObject, generateText, LanguageModelV1 } from "ai";
 
 const log = createLogger("model:anthropic");
 
-export interface OpenAIConfig {
+export interface AnthropicConfig {
   apiKey: string;
   model: string;
 }
@@ -21,7 +21,7 @@ export class AnthropicProvider implements ModelProvider {
 
   private model: string;
   private instance: LanguageModelV1;
-  constructor(config: OpenAIConfig) {
+  constructor(config: AnthropicConfig) {
     const anthropic = createAnthropic({
       apiKey: config.apiKey
     });
@@ -78,6 +78,6 @@ export class AnthropicProvider implements ModelProvider {
   }
 
   async init(): Promise<void> {
-    // No initialization needed for OpenAI
+    // No initialization needed for Anthropic
   }
 }
