@@ -1,13 +1,46 @@
-import { logModelInteraction } from "../utils/logger";
+import { z } from "zod";
 import { generateSystemTemplate } from "../system/templates";
+import { logModelInteraction } from "../utils/logger";
 /**
  * Configuration for model requests
  */
 export interface ModelRequestConfig {
+  modelId?: string;
   temperature?: number;
   maxTokens?: number;
   stopSequences?: string[];
 }
+
+/**
+ * Parameters for generating a response from a model
+ */
+export interface GenerateBaseParams {
+  systemPrompt?: string;
+  config?: ModelRequestConfig;
+}
+
+export interface GenerateWithPromptParams extends GenerateBaseParams {
+  prompt: string;
+  messages?: never;
+}
+export interface GenerateWithMessagesParams extends GenerateBaseParams {
+  messages: { role: string; content: string }[];
+  prompt?: never;
+}
+
+export type GenerateObjectSchema<OBJECT> = {
+  schema: z.ZodSchema<OBJECT, z.ZodTypeDef, unknown>;
+};
+
+export type GenerateParams =
+  | GenerateWithMessagesParams
+  | GenerateWithPromptParams;
+
+export type GenerateObjectParams<OBJECT> = GenerateParams &
+  GenerateObjectSchema<OBJECT>;
+
+// type StreamTextResponse = ReturnType<typeof streamText>;
+// type StreamObjectResponse = ReturnType<typeof streamObject>;
 
 /**
  * Base interface that all LLM models must implement
@@ -16,7 +49,24 @@ export interface ModelInterface {
   /**
    * Get a text completion from the model
    */
-  getText(prompt: string, config?: ModelRequestConfig): Promise<string>;
+  getText(params: GenerateParams): Promise<string>;
+
+  /**
+   * Generate a typed, structured object
+   */
+  getObject<OBJECT>(params: GenerateObjectParams<OBJECT>): Promise<OBJECT>;
+
+  /**
+   * Stream text from the model
+   */
+  // streamText(params: GenerateParams): StreamTextResponse;
+
+  /**
+   * Stream objects from the model
+   */
+  // streamObject<OBJECT>(
+  //   params: GenerateObjectParams<OBJECT>
+  // ): StreamObjectResponse;
 
   /**
    * Initialize the model with any necessary setup
@@ -24,61 +74,56 @@ export interface ModelInterface {
   init?(): Promise<void>;
 }
 
-/**
- * Decorator that adds logging to any ModelInterface implementation.
- * Logs all prompts, responses, and errors to the model interactions log file.
- *
- * This follows the decorator pattern to add logging behavior to any model
- * without requiring the model implementations to handle logging themselves.
- */
-export class LoggingModelDecorator implements ModelInterface {
-  constructor(
-    private model: ModelInterface,
-    private modelId: string
-  ) {}
+export async function executeWithLogging<
+  A extends GenerateParams,
+  Method extends (args: A) => unknown
+>(modelId: string, params: A, method: Method): Promise<ReturnType<Method>> {
+  try {
+    const systemTemplate = generateSystemTemplate();
 
-  async getText(prompt: string, config?: ModelRequestConfig): Promise<string> {
-    try {
-      // append the system template to the prompt
-      const systemTemplate = generateSystemTemplate();
-      const promptWithSystem = `${systemTemplate}\n\n${prompt}`;
+    const { config } = params;
+    logModelInteraction("system", {
+      model: modelId,
+      systemTemplate,
+      config
+    });
 
-      // Log the prompt
-      logModelInteraction("prompt", {
-        model: this.modelId,
-        prompt: promptWithSystem,
+    let data = {};
+    if ("messages" in params) {
+      data = { messages: params.messages };
+    } else if ("prompt" in params) {
+      data = { prompt: params.prompt };
+    } else {
+      throw new Error("Params must specify either prompt or messages");
+    }
+
+    logModelInteraction("prompt", {
+      model: modelId,
+      ...data,
+      config
+    });
+
+    const response = await method(params);
+
+    // Log the response
+    logModelInteraction("response", {
+      model: modelId,
+      response,
+      execution_metadata: {
+        timestamp: new Date().toISOString(),
         config
-      });
+      }
+    });
 
-      // Get response from underlying model
-      const response = await this.model.getText(promptWithSystem, config);
-
-      // Log the response
-      logModelInteraction("response", {
-        model: this.modelId,
-        response,
-        execution_metadata: {
-          timestamp: new Date().toISOString(),
-          config
-        }
-      });
-
-      return response;
-    } catch (error) {
-      // Log any errors
-      logModelInteraction("error", {
-        model: this.modelId,
-        error: error instanceof Error ? error.message : String(error),
-        status: "failed",
-        prompt
-      });
-      throw error;
-    }
-  }
-
-  async init(): Promise<void> {
-    if (this.model.init) {
-      return this.model.init();
-    }
+    return response;
+  } catch (error) {
+    // Log any errors
+    logModelInteraction("error", {
+      model: modelId,
+      error: error instanceof Error ? error.message : String(error),
+      status: "failed",
+      prompt
+    });
+    throw error;
   }
 }

@@ -49,6 +49,9 @@ export class PluginExpress extends PluginBase {
             { temperature: 0.2 }
           );
 
+          console.log("\n\n\\n\n");
+          console.dir(formattedResponse, { depth: null });
+
           await context.platformContext.responseHandler(
             formattedResponse.message
           );

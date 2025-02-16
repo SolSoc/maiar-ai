@@ -1,30 +1,29 @@
+import { z } from "zod";
+import { MemoryService } from "../memory/service";
+import { LLMService } from "../models/service";
+import { OperationConfig } from "../operations/base";
+import { getBoolean } from "../operations/getBoolean";
+import { getObject, type GetObjectConfig } from "../operations/getObject";
+import { getText } from "../operations/getText";
 import { Plugin } from "../plugin";
 import { PluginRegistry } from "../registry";
 import {
   AgentContext,
-  EventQueue,
-  UserInputContext,
   BaseContextItem,
-  getUserInput
+  EventQueue,
+  getUserInput,
+  UserInputContext
 } from "../types/agent";
+import { createLogger } from "../utils/logger";
+import { generatePipelineTemplate } from "./templates";
 import {
-  PipelineSchema,
-  PipelineStep,
   Pipeline,
   PipelineGenerationContext,
+  PipelineSchema,
+  PipelineStep,
   RuntimeConfig,
   RuntimeOptions
 } from "./types";
-import { generatePipelineTemplate } from "./templates";
-import { getObject } from "../operations/getObject";
-import { getText } from "../operations/getText";
-import { getBoolean } from "../operations/getBoolean";
-import { type GetObjectConfig } from "../operations/getObject";
-import { LLMService } from "../models/service";
-import { createLogger } from "../utils/logger";
-import { z } from "zod";
-import { OperationConfig } from "../operations/base";
-import { MemoryService } from "../memory/service";
 
 const log = createLogger("runtime");
 
@@ -63,8 +62,8 @@ export class Runtime {
    * Operations that can be used by plugins
    */
   public readonly operations = {
-    getObject: <T extends z.ZodType<unknown>>(
-      schema: T,
+    getObject: <OBJECT>(
+      schema: z.ZodSchema<OBJECT, z.ZodTypeDef, unknown>,
       prompt: string,
       config?: OperationConfig
     ) => getObject(this.llmService, schema, prompt, config),

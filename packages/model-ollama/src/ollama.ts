@@ -1,5 +1,11 @@
-import { ModelProvider, ModelRequestConfig } from "@maiar-ai/core";
-import { createLogger } from "@maiar-ai/core";
+import {
+  createLogger,
+  GenerateObjectParams,
+  GenerateParams,
+  ModelProvider
+} from "@maiar-ai/core";
+import { generateObject, generateText, LanguageModelV1 } from "ai";
+import { createOllama } from "ollama-ai-provider";
 
 const log = createLogger("model:ollama");
 
@@ -16,6 +22,7 @@ export class OllamaProvider implements ModelProvider {
   private baseUrl: string;
   private model: string;
 
+  private client: LanguageModelV1;
   constructor(config: OllamaConfig) {
     if (!config.baseUrl) {
       throw new Error("baseUrl is required");
@@ -24,41 +31,70 @@ export class OllamaProvider implements ModelProvider {
       throw new Error("model is required");
     }
 
-    this.baseUrl = config.baseUrl.replace(/\/$/, "");
     this.model = config.model;
+    this.baseUrl = config.baseUrl.replace(/\/$/, "");
+    const ollama = createOllama({
+      baseURL: this.baseUrl
+    });
+    this.client = ollama(this.model);
   }
 
-  async getText(prompt: string, config?: ModelRequestConfig): Promise<string> {
+  async getText(params: GenerateParams): Promise<string> {
     try {
-      const response = await fetch(`${this.baseUrl}/api/generate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model: this.model,
-          prompt,
-          stream: false,
-          options: {
-            temperature: config?.temperature ?? 0.7,
-            stop: config?.stopSequences
-          }
-        })
+      const { prompt, config } = params;
+
+      log.info("Sending prompt to Deepseek:", prompt);
+
+      const { text } = await generateText({
+        model: this.client,
+        prompt,
+        temperature: config?.temperature ?? 0.7,
+        stopSequences: config?.stopSequences
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Someone else will need to test to see if this is necessary
+      // log.info("Received response from Deepseek:", text);
 
-      const data = await response.json();
-      return data.response;
+      // // Remove the "Assistant: Let me help you with that." prefix if it exists
+      // const cleanedText = text.replace(
+      //   /^Assistant: Let me help you with that\.\s*/,
+      //   ""
+      // );
+
+      return text;
     } catch (error) {
-      log.error("Error getting text from Ollama:", error);
+      log.error("Error getting text from Deepseek:", error);
+      throw error;
+    }
+  }
+
+  async getObject<OBJECT>(
+    params: GenerateObjectParams<OBJECT>
+  ): Promise<OBJECT> {
+    try {
+      const { prompt, schema, config } = params;
+
+      log.info("Sending prompt to Deepseek:", prompt);
+
+      const { object } = await generateObject({
+        model: this.client,
+        prompt,
+        schema: schema,
+        temperature: config?.temperature ?? 0.7,
+        maxTokens: config?.maxTokens
+      });
+
+      // Someone else will need to test to see if this is necessary
+      // log.info("Received response from Deepseek:", object);
+
+      return object;
+    } catch (error) {
+      log.error("Error getting object from Deepseek:", error);
       throw error;
     }
   }
 
   async init(): Promise<void> {
-    // No initialization needed for Ollama
+    // No initialization needed for Deepseek
   }
 }

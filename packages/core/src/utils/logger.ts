@@ -136,7 +136,7 @@ const modelLogger = pino(
  * Log model interactions to a separate file
  */
 export function logModelInteraction(
-  type: "prompt" | "response" | "error",
+  type: "prompt" | "messages" | "system" | "response" | "error",
   data: Record<string, unknown>
 ): void {
   modelLogger.info({

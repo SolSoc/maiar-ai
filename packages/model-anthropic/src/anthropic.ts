@@ -1,39 +1,40 @@
-import { createOpenAI, OpenAIProvider as Provider } from "@ai-sdk/openai";
+import { createAnthropic } from "@ai-sdk/anthropic";
 import {
   createLogger,
   GenerateObjectParams,
   GenerateParams,
   ModelProvider
 } from "@maiar-ai/core";
-import { generateObject, generateText } from "ai";
+import { generateObject, generateText, LanguageModelV1 } from "ai";
 
-const log = createLogger("model:openai");
+const log = createLogger("model:anthropic");
 
 export interface OpenAIConfig {
   apiKey: string;
   model: string;
 }
 
-export class OpenAIProvider implements ModelProvider {
-  readonly id = "openai";
-  readonly name = "OpenAI";
-  readonly description = "OpenAI API models like GPT-4 and GPT-3.5";
+export class AnthropicProvider implements ModelProvider {
+  readonly id = "anthropic";
+  readonly name = "Anthropic";
+  readonly description = "Anthropic API models like Claude";
 
   private model: string;
-  private provider: Provider;
+  private instance: LanguageModelV1;
   constructor(config: OpenAIConfig) {
-    this.provider = createOpenAI({
+    const anthropic = createAnthropic({
       apiKey: config.apiKey
     });
 
-    this.model = config.model ?? "gpt-4o";
+    this.model = config.model ?? "claude-3-5-haiku-20241022";
+    this.instance = anthropic(this.model);
   }
 
   async getText(params: GenerateParams): Promise<string> {
     try {
       const { prompt, config } = params;
       const { text } = await generateText({
-        model: this.provider(this.model),
+        model: this.instance,
         prompt,
         temperature: config?.temperature ?? 0.7,
         maxTokens: config?.maxTokens,
@@ -46,7 +47,7 @@ export class OpenAIProvider implements ModelProvider {
 
       return text;
     } catch (error) {
-      log.error("Error getting text from OpenAI:", error);
+      log.error("Error getting text from Anthropic:", error);
       throw error;
     }
   }
@@ -57,7 +58,7 @@ export class OpenAIProvider implements ModelProvider {
     try {
       const { prompt, schema, config } = params;
       const { object } = await generateObject({
-        model: this.provider(this.model, { structuredOutputs: true }),
+        model: this.instance,
         prompt,
         schema: schema,
         temperature: config?.temperature ?? 0.7,
@@ -71,7 +72,7 @@ export class OpenAIProvider implements ModelProvider {
       return object;
     } catch (error) {
       console.error(error);
-      log.error("Error getting object from OpenAI:" + JSON.stringify(error));
+      log.error("Error getting object from Anthropic:" + JSON.stringify(error));
       throw error;
     }
   }

@@ -4,6 +4,7 @@ import "dotenv/config";
 process.removeAllListeners("warning");
 
 import { config } from "dotenv";
+import fs from "fs";
 import path from "path";
 
 // Load environment variables from root .env

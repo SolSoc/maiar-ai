@@ -46,7 +46,9 @@
     "prepublishOnly": "pnpm run build"
   },
   "dependencies": {
-    "@maiar-ai/core": "workspace:*"
+    "@maiar-ai/core": "workspace:*",
+    "ai": "^4.1.41",
+    "ollama-ai-provider": "^1.2.0"
   },
   "devDependencies": {
     "@types/node": "22.13.1",

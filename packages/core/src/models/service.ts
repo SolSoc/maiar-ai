@@ -1,9 +1,6 @@
-import {
-  ModelInterface,
-  ModelRequestConfig,
-  LoggingModelDecorator
-} from "./base";
+import { z } from "zod";
 import { createLogger } from "../utils/logger";
+import { executeWithLogging, ModelInterface, ModelRequestConfig } from "./base";
 
 const log = createLogger("models");
 
@@ -35,17 +32,7 @@ export class LLMService {
    * Register a model
    */
   registerModel(model: ModelProvider, modelId: string): void {
-    // Create a decorated provider that adds logging while preserving the provider interface
-    const decoratedProvider: ModelProvider = {
-      ...model, // Copy all provider properties
-      getText: async (prompt: string, config?: ModelRequestConfig) => {
-        // Create logging decorator just for getText calls
-        const decorator = new LoggingModelDecorator(model, modelId);
-        return decorator.getText(prompt, config);
-      }
-    };
-
-    this.models.set(modelId, decoratedProvider);
+    this.models.set(modelId, model);
 
     // Set as default if it's the first model
     if (this.defaultModelId === null) {
@@ -62,19 +49,40 @@ export class LLMService {
     prompt: string,
     config?: ModelRequestConfig & { modelId?: string }
   ): Promise<string> {
-    const modelId = config?.modelId || this.defaultModelId;
-    if (!modelId) {
+    const [modelId, model] = this.getModel(config?.modelId);
+    return await executeWithLogging(modelId, { prompt, config }, model.getText);
+  }
+
+  /**
+   * Get a structured object from the default or specified model
+   */
+  async getObject<OBJECT>(
+    prompt: string,
+    schema: z.ZodSchema<OBJECT, z.ZodTypeDef, unknown>,
+    config?: ModelRequestConfig & { modelId?: string }
+  ): Promise<OBJECT> {
+    const [modelId, model] = this.getModel(config?.modelId);
+    return (await executeWithLogging(
+      modelId,
+      { prompt, schema, config },
+      model.getObject
+    )) as OBJECT;
+  }
+
+  /**
+   * Get the model ID and instance. If no model ID is provided, use the default model
+   */
+  getModel(modelId?: string): [string, ModelProvider] {
+    const id = modelId || this.defaultModelId;
+    if (!id) {
       throw new Error("No model available");
     }
-
-    const model = this.models.get(modelId);
+    const model = this.models.get(id);
     if (!model) {
       throw new Error(`Unknown model: ${modelId}`);
     }
-
-    return model.getText(prompt, config);
+    return [id, model];
   }
-
   /**
    * Set the default model
    */
