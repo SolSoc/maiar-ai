@@ -4,7 +4,6 @@ import "dotenv/config";
 process.removeAllListeners("warning");
 
 import { config } from "dotenv";
-import fs from "fs";
 import path from "path";
 
 // Load environment variables from root .env
@@ -15,7 +14,9 @@ config({
 import { createRuntime } from "@maiar-ai/core";
 
 // Import all plugins
+import { PluginCharacter } from "@maiar-ai/plugin-character";
 import { PluginExpress } from "@maiar-ai/plugin-express";
+import { PluginSearch } from "@maiar-ai/plugin-search";
 import { PluginTextGeneration } from "@maiar-ai/plugin-text";
 import { PluginTime } from "@maiar-ai/plugin-time";
 
