@@ -7,6 +7,7 @@ import { PluginExpress } from "./plugin";
  */
 export interface ExpressRoute {
   path: string;
+  method?: string;
   /**
    * Support middlewares, routers, etc.
    */
