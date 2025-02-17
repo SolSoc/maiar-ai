@@ -1,18 +1,6 @@
-import { Request, RequestHandler, Router } from "express";
+import { Request, Router } from "express";
 import { z } from "zod";
 import { PluginExpress } from "./plugin";
-
-/**
- * A route definition for the Express server.
- */
-export interface ExpressRoute {
-  path: string;
-  method?: string;
-  /**
-   * Support middlewares, routers, etc.
-   */
-  handler: Router | RequestHandler;
-}
 
 /**
  * Configuration options for the Express plugin.
@@ -31,7 +19,10 @@ export interface ExpressPluginConfig {
    */
   host?: string;
 
-  routes: ExpressRoute[];
+  /**
+   * The Express router to use for handling requests
+   */
+  router: Router;
 }
 
 export interface ExpressRequest extends Request {

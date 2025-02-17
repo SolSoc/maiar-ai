@@ -6,6 +6,11 @@ import {
 import { NextFunction, Response, Router } from "express";
 
 const router = Router();
+
+router.get("/", (_req, res) => {
+  res.json({ message: "Hello World!" });
+});
+
 // Generic message endpoint that creates a context
 router.post(
   "/message",
@@ -46,5 +51,10 @@ router.post(
     await req.plugin.runtime.createEvent(initialContext, platformContext);
   }
 );
+
+router.get("/health", (req, res) => {
+  console.log("[Express Plugin] Health check requested");
+  res.json({ status: "ok" });
+});
 
 export default router;

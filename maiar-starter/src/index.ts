@@ -35,17 +35,8 @@ const runtime = createRuntime({
   }),
   plugins: [
     new PluginExpress({
-      port: 3000,
-      routes: [
-        { path: "", handler: appRouter },
-        {
-          path: "/index",
-          method: "GET",
-          handler: (_req, res) => {
-            res.send("Hello World!");
-          }
-        }
-      ]
+      port: 3001,
+      router: appRouter
     }),
     new PluginTextGeneration(),
     new PluginTime(),

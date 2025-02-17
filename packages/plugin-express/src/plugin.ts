@@ -24,7 +24,7 @@ export class PluginExpress extends PluginBase {
     private config: ExpressPluginConfig = {
       port: 3000,
       host: "localhost",
-      routes: []
+      router: express.Router()
     }
   ) {
     super({
@@ -97,33 +97,8 @@ export class PluginExpress extends PluginBase {
           next();
         });
 
-        // Basic health check endpoint
-        this.app.get("/health", (req, res) => {
-          console.log("[Express Plugin] Health check requested");
-          res.json({ status: "ok" });
-        });
-
-        // Add routes to the Express server
-        for (const route of this.config.routes) {
-          const method = (route.method || "").toLowerCase();
-          if (!method) {
-            this.app.use(route.path, route.handler);
-          } else if (method === "get") {
-            this.app.get(route.path, route.handler);
-          } else if (method === "post") {
-            this.app.post(route.path, route.handler);
-          } else if (method === "put") {
-            this.app.put(route.path, route.handler);
-          } else if (method === "delete") {
-            this.app.delete(route.path, route.handler);
-          } else if (method === "patch") {
-            this.app.patch(route.path, route.handler);
-          } else {
-            console.warn(
-              `[Express Plugin] Unsupported method for route ${route.path}: ${route.method}`
-            );
-          }
-        }
+        // Mount the route handler onto the Express app
+        this.app.use("", this.config.router);
 
         // Start the server
         this.app.listen(
