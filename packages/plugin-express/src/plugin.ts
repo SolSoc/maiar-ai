@@ -105,7 +105,24 @@ export class PluginExpress extends PluginBase {
 
         // Add routes to the Express server
         for (const route of this.config.routes) {
-          this.app.use(route.path, route.handler);
+          const method = (route.method || "").toLowerCase();
+          if (!method) {
+            this.app.use(route.path, route.handler);
+          } else if (method === "get") {
+            this.app.get(route.path, route.handler);
+          } else if (method === "post") {
+            this.app.post(route.path, route.handler);
+          } else if (method === "put") {
+            this.app.put(route.path, route.handler);
+          } else if (method === "delete") {
+            this.app.delete(route.path, route.handler);
+          } else if (method === "patch") {
+            this.app.patch(route.path, route.handler);
+          } else {
+            console.warn(
+              `[Express Plugin] Unsupported method for route ${route.path}: ${route.method}`
+            );
+          }
         }
 
         // Start the server
