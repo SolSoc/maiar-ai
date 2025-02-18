@@ -13,15 +13,17 @@
     "@maiar-ai/core": "workspace:*",
     "@maiar-ai/memory-sqlite": "workspace:*",
     "@maiar-ai/model-openai": "workspace:*",
+    "@maiar-ai/plugin-character": "workspace:*",
     "@maiar-ai/plugin-express": "workspace:*",
+    "@maiar-ai/plugin-search": "workspace:*",
     "@maiar-ai/plugin-text": "workspace:*",
     "@maiar-ai/plugin-time": "workspace:*",
-    "@maiar-ai/plugin-character": "workspace:*",
-    "@maiar-ai/plugin-search": "workspace:*",
-    "dotenv": "16.4.7"
+    "dotenv": "16.4.7",
+    "express": "4.21.2"
   },
   "devDependencies": {
     "chokidar-cli": "3.0.0",
+    "@types/express": "5.0.0",
     "dotenv-cli": "8.0.0",
     "tsup": "8.3.6",
     "typescript": "5.7.3"

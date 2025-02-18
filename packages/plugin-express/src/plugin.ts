@@ -1,10 +1,14 @@
 import express, { Express, Request, Response } from "express";
 
-import { PluginBase, PluginResult, UserInputContext } from "@maiar-ai/core";
-import { ExpressPluginConfig, ExpressResponseSchema } from "./types";
+import { PluginBase, PluginResult } from "@maiar-ai/core";
 import { generateResponseTemplate } from "./templates";
+import {
+  ExpressPluginConfig,
+  ExpressRequest,
+  ExpressResponseSchema
+} from "./types";
 
-interface ExpressPlatformContext {
+export interface ExpressPlatformContext {
   platform: string;
   responseHandler?: (response: unknown) => void;
   metadata?: {
@@ -17,7 +21,11 @@ export class PluginExpress extends PluginBase {
   private app: Express | null = null;
 
   constructor(
-    private config: ExpressPluginConfig = { port: 3000, host: "localhost" }
+    private config: ExpressPluginConfig = {
+      port: 3000,
+      host: "localhost",
+      routes: []
+    }
   ) {
     super({
       id: "plugin-express",
@@ -83,44 +91,22 @@ export class PluginExpress extends PluginBase {
         this.app.use(express.json());
         console.log("[Express Plugin] Express middleware configured");
 
+        // Add plugin instance to the request object
+        this.app.use((req: ExpressRequest, _res, next) => {
+          req.plugin = this;
+          next();
+        });
+
         // Basic health check endpoint
         this.app.get("/health", (req, res) => {
           console.log("[Express Plugin] Health check requested");
           res.json({ status: "ok" });
         });
 
-        // Generic message endpoint that creates a context
-        this.app.post("/message", async (req: Request, res: Response) => {
-          const { message, user } = req.body;
-          console.log(
-            `[Express Plugin] Received message from user ${user || "anonymous"}:`,
-            message
-          );
-
-          // Create new context chain with initial user input
-          const initialContext: UserInputContext = {
-            id: `${this.id}-${Date.now()}`,
-            pluginId: this.id,
-            type: "user_input",
-            action: "receive_message",
-            content: message,
-            timestamp: Date.now(),
-            rawMessage: message,
-            user: user || "anonymous"
-          };
-
-          // Create event with initial context and response handler
-          const platformContext: ExpressPlatformContext = {
-            platform: this.id,
-            responseHandler: (result: unknown) => res.json(result),
-            metadata: {
-              req,
-              res
-            }
-          };
-
-          await this.runtime.createEvent(initialContext, platformContext);
-        });
+        // Add routes to the Express server
+        for (const route of this.config.routes) {
+          this.app.use(route.path, route.handler);
+        }
 
         // Start the server
         this.app.listen(

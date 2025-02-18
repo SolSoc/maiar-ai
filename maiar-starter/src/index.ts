@@ -4,8 +4,8 @@ import "dotenv/config";
 process.removeAllListeners("warning");
 
 import { config } from "dotenv";
-import path from "path";
 import fs from "fs";
+import path from "path";
 
 // Load environment variables from root .env
 config({
@@ -15,14 +15,15 @@ config({
 import { createRuntime } from "@maiar-ai/core";
 
 // Import all plugins
-import { PluginExpress } from "@maiar-ai/plugin-express";
-import { PluginTextGeneration } from "@maiar-ai/plugin-text";
-import { PluginTime } from "@maiar-ai/plugin-time";
-import { PluginCharacter } from "@maiar-ai/plugin-character";
-import { PluginSearch } from "@maiar-ai/plugin-search";
 import { SQLiteProvider } from "@maiar-ai/memory-sqlite";
 import { OpenAIProvider } from "@maiar-ai/model-openai";
+import { PluginCharacter } from "@maiar-ai/plugin-character";
+import { PluginExpress } from "@maiar-ai/plugin-express";
+import { PluginSearch } from "@maiar-ai/plugin-search";
+import { PluginTextGeneration } from "@maiar-ai/plugin-text";
+import { PluginTime } from "@maiar-ai/plugin-time";
 
+import appRouter from "./app";
 // Create and start the agent
 const runtime = createRuntime({
   model: new OpenAIProvider({
@@ -33,7 +34,10 @@ const runtime = createRuntime({
     dbPath: path.join(process.cwd(), "data", "conversations.db")
   }),
   plugins: [
-    new PluginExpress({ port: 3000 }),
+    new PluginExpress({
+      port: 3000,
+      routes: [{ path: "", handler: appRouter }]
+    }),
     new PluginTextGeneration(),
     new PluginTime(),
     new PluginCharacter({
