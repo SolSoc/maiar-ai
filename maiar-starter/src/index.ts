@@ -28,7 +28,7 @@ import { PluginTextGeneration } from "@maiar-ai/plugin-text";
 import { PluginTime } from "@maiar-ai/plugin-time";
 import { PluginX } from "@maiar-ai/plugin-x";
 import appRouter from "./app";
-import { telegramConfig } from "./bot";
+import composer from "./bot";
 
 // Create and start the agent
 const runtime = createRuntime({
@@ -68,7 +68,7 @@ const runtime = createRuntime({
     }),
     new PluginTelegram({
       token: process.env.TELEGRAM_BOT_TOKEN as string,
-      handlers: [telegramConfig]
+      composer
     })
   ]
 });
