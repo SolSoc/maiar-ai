@@ -91,9 +91,8 @@ export class PluginTelegram extends PluginBase {
       return await next();
     });
 
-    for (const { filter, handler } of this.config.handlers) {
-      this.bot.on(filter, handler);
-    }
+    this.bot.use(this.config.composer);
+
     // Log all bot errors
     this.bot.catch((error) => {
       log.error("Bot error", {
