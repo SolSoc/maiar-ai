@@ -5,10 +5,11 @@ import {
   TelegramPlatformContext
 } from "@maiar-ai/plugin-telegram";
 import { Context } from "telegraf";
+import { UpdateType } from "telegraf/typings/telegram-types";
 
 const log = createLogger("plugin-telegram");
 const telegramConfig = {
-  filter: "message",
+  filter: "message" as UpdateType,
   handler: async (ctx: Context) => {
     try {
       if (!ctx.message || (ctx.message && !("text" in ctx.message))) return;

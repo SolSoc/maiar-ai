@@ -1,11 +1,10 @@
 import { Context } from "telegraf";
 import { z } from "zod";
 import { PluginTelegram } from "./plugin";
-import { Guard } from "telegraf/typings/core/helpers/util";
-import { Update } from "telegraf/typings/core/types/typegram";
+import { UpdateType } from "telegraf/typings/telegram-types";
 
 interface TelegramHandler {
-  filter: Guard<Update>;
+  filter: UpdateType;
   handler: (ctx: Context, next?: () => Promise<void>) => Promise<void>;
 }
 
