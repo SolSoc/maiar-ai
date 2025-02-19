@@ -15,18 +15,21 @@ config({
 import { createRuntime } from "@maiar-ai/core";
 
 // Import providers
-import { OpenAIProvider } from "@maiar-ai/model-openai";
 import { SQLiteProvider } from "@maiar-ai/memory-sqlite";
+import { OpenAIProvider } from "@maiar-ai/model-openai";
 
 // Import all plugins
+import { PluginCharacter } from "@maiar-ai/plugin-character";
 import { PluginExpress } from "@maiar-ai/plugin-express";
+import { PluginSearch } from "@maiar-ai/plugin-search";
+import { PluginTelegram } from "@maiar-ai/plugin-telegram";
+import { PluginTerminal } from "@maiar-ai/plugin-terminal";
 import { PluginTextGeneration } from "@maiar-ai/plugin-text";
 import { PluginTime } from "@maiar-ai/plugin-time";
-import { PluginCharacter } from "@maiar-ai/plugin-character";
-import { PluginSearch } from "@maiar-ai/plugin-search";
 import { PluginX } from "@maiar-ai/plugin-x";
-import { PluginTerminal } from "@maiar-ai/plugin-terminal";
 import appRouter from "./app";
+import { telegramConfig } from "./bot";
+
 // Create and start the agent
 const runtime = createRuntime({
   model: new OpenAIProvider({
@@ -62,6 +65,10 @@ const runtime = createRuntime({
     new PluginTerminal({
       user: "test",
       agentName: "maiar-starter"
+    }),
+    new PluginTelegram({
+      token: process.env.TELEGRAM_BOT_TOKEN as string,
+      handlers: [telegramConfig]
     })
   ]
 });
