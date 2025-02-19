@@ -82,9 +82,9 @@ importers:
       "@maiar-ai/plugin-search":
         specifier: workspace:*
         version: link:../packages/plugin-search
-      "@maiar-ai/plugin-terminal":
+      "@maiar-ai/plugin-telegram":
         specifier: workspace:*
-        version: link:../packages/plugin-terminal
+        version: link:../packages/plugin-telegram
       "@maiar-ai/plugin-text":
         specifier: workspace:*
         version: link:../packages/plugin-text
@@ -100,6 +100,9 @@ importers:
       express:
         specifier: 4.21.2
         version: 4.21.2
+      telegraf:
+        specifier: 4.16.3
+        version: 4.16.3(encoding@0.1.13)
     devDependencies:
       "@types/express":
         specifier: 5.0.0
