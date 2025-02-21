@@ -9,6 +9,11 @@ import { Composer, Context } from "telegraf";
 const composer = new Composer();
 
 const log = createLogger("plugin-telegram");
+
+composer.command("do_action", async (ctx) => {
+  return await ctx.reply("Did some action.");
+});
+
 composer.on("message", async (ctx: Context) => {
   try {
     if (!ctx.message || (ctx.message && !("text" in ctx.message))) return;
@@ -20,10 +25,13 @@ composer.on("message", async (ctx: Context) => {
       username: ctx.message.from?.username
     };
 
+    // telegram id
+    // twitter id
+    // call internal loading => scoped to teh bot.
     const plugin = ctx.plugin as PluginTelegram;
     const pluginId = plugin.id;
     const userContext: UserInputContext = {
-      id: `${pluginId}-${Date.now()}`,
+      id: `${pluginId}-${ctx.message.message_id}`,
       pluginId: pluginId,
       type: "user_input",
       action: "receiveMessage",
@@ -44,7 +52,7 @@ composer.on("message", async (ctx: Context) => {
     const platformContext: TelegramPlatformContext = {
       platform: pluginId,
       responseHandler: async (response: unknown) => {
-        await ctx.reply(String(response));
+        await ctx.reply(String(response), { parse_mode: "HTML" });
       },
       metadata: {
         chatId: message.chatId

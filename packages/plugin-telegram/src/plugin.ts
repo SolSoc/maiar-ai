@@ -17,14 +17,6 @@ import { generateResponseTemplate } from "./templates";
 
 const log = createLogger("plugin:telegram");
 
-export interface TelegramPlatformContext {
-  platform: string;
-  responseHandler?: (response: unknown) => void;
-  metadata?: {
-    chatId: number;
-  };
-}
-
 export class PluginTelegram extends PluginBase {
   private bot: Telegraf<TelegramContext>;
 
