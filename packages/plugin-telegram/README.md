@@ -17,7 +17,7 @@ interface TelegramPluginConfig {
   composer: Composer<TelegramContext>; // Handlers to register
   // Optional configuration
   pollingTimeout?: number; // Polling timeout in seconds
-  dropPendingUpdates?: boolean; // Whether to drop pending updates on start
+  dropPendingUpdates?: boolean; // Whether pending updates are dropped on start/restart
 }
 ```
 
