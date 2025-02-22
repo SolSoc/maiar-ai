@@ -9,7 +9,7 @@ https://maiar.dev/docs
 
 ## Configuration
 
-The X plugin requires the following configuration:
+The Telegram plugin requires the following configuration:
 
 ```typescript
 interface TelegramPluginConfig {
