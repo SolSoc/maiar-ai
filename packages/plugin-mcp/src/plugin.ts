@@ -5,8 +5,8 @@ import { z, ZodType } from "zod";
 import { AgentTask, Plugin, PluginResult } from "@maiar-ai/core";
 
 import { generateArgumentTemplate } from "./templates";
+import { buildTransport } from "./transports";
 import { ServerConfig } from "./types";
-import { buildTransport } from "./utils";
 
 interface Tool {
   name: string;
@@ -46,7 +46,7 @@ export class MCPPlugin extends Plugin {
 
       this.logger.info("connecting to MCP server...", {
         type: "plugin-mcp.init",
-        clientName: name
+        name
       });
       await client.connect(transport);
 

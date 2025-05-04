@@ -4,9 +4,9 @@ import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/
 import { ServerConfig, StdioConfig, StreamableHttpConfig } from "./types";
 
 export function clientCommand(
-  command: string | undefined,
-  serverScriptPath: string | undefined
-) {
+  command?: string,
+  serverScriptPath?: string
+): string {
   let result;
 
   if (command) {
@@ -31,24 +31,21 @@ export function buildTransport(config: StdioConfig): StdioClientTransport;
 export function buildTransport(
   config: StreamableHttpConfig
 ): StreamableHTTPClientTransport;
-export function buildTransport(config: ServerConfig) {
+export function buildTransport(
+  config: ServerConfig
+): StdioClientTransport | StreamableHTTPClientTransport {
   let transport;
   if ("url" in config) {
-    transport = new StreamableHTTPClientTransport(new URL(config.url));
+    const url = new URL(config.url);
+    transport = new StreamableHTTPClientTransport(url);
   } else {
-    const {
-      serverScriptPath,
-      command: tempCommand = "",
-      args = [],
-      env
-    } = config as StdioConfig;
+    const { serverScriptPath, command, args = [], env } = config as StdioConfig;
 
-    const command = clientCommand(tempCommand, serverScriptPath);
+    const cmd = clientCommand(command, serverScriptPath);
 
-    if (serverScriptPath) {
-      // put the script path as first argument
-      args.unshift(serverScriptPath);
-    }
+    // put the script path as first argument
+    if (serverScriptPath) args.unshift(serverScriptPath);
+
     const processEnv = Object.fromEntries(
       Object.entries(process.env).filter(([, v]) => v !== undefined) as [
         string,
@@ -56,7 +53,7 @@ export function buildTransport(config: ServerConfig) {
       ][]
     );
     transport = new StdioClientTransport({
-      command,
+      command: cmd,
       args,
       env: {
         ...processEnv,

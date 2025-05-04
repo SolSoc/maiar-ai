@@ -1,9 +1,10 @@
 interface BaseMCPConfig {
   /** Required name passed to the underlying MCP client */
   name: string;
-  /** Optional version passed to the underlying MCP client */
+  /** Optional version passed to the underlying MCP client. Defaults to 1.0.0 */
   version?: string;
 }
+
 /**
  * The MCP configuration for when a server should be started locally.
  */
